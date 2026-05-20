@@ -118,19 +118,21 @@
     <div class="config-grid">
       <div class="config-group">
         <label>Time slots (one per line)</label>
-        <textarea id="cfg-times" rows="6">09:00 – 09:30
-09:30 – 10:00
-10:00 – 10:30
-10:30 – 11:00
-11:00 – 11:30
-11:30 – 12:00</textarea>
+        <textarea id="cfg-times" rows="6">10h00 – 11h00
+11h30 – 12h30
+12h30 – 13h30
+13h30 – 14h30
+15h30 – 16h30
+16h30 – 17h30</textarea>
       </div>
       <div class="config-group">
         <label>Locations (one per line)</label>
-        <textarea id="cfg-locations" rows="6">Room A
-Room B
-Room C
-Outdoor</textarea>
+        <textarea id="cfg-locations" rows="6">Jeu de massacre
+Château gonflable
+Pêche aux canards
+Sumo
+Maquillage
+Jeux en bois</textarea>
       </div>
     </div>
     <div class="config-group" style="margin-top:1rem">
@@ -189,8 +191,8 @@ let myEmail = localStorage.getItem('signup_grid_email') || '';
 let liveSignups = {}; // key: "t{timeIdx}_l{locIdx}" → {email, timestamp}
 let gridConfig = {
   title: 'Community Event 2026b',
-  times: ['09:00 – 09:30','09:30 – 10:00','10:00 – 10:30','10:30 – 11:00','11:00 – 11:30','11:30 – 12:00'],
-  locations: ['Room A','Room B','Room C','Outdoor']
+  times: ['10h00 – 11h00','11h30 – 12h30','12h30 – 13h30','13h30 – 14h30','15h30 – 16h30','16h30 – 17h30'],
+  locations: ['Jeu de massacre','Château gonflable','Pêche aux canards','Sumo','Maquillage','Jeux en bois']
 };
 
 // ─── Firebase init ────────────────────────────────────────────────────────────
