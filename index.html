@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Signup Grid</title>
+<style>
+  :root {
+    --accent: #2563eb;
+    --accent-light: #eff6ff;
+    --taken: #16a34a;
+    --taken-light: #f0fdf4;
+    --mine: #7c3aed;
+    --mine-light: #f5f3ff;
+    --border: #e5e7eb;
+    --text: #111827;
+    --muted: #6b7280;
+    --bg: #f9fafb;
+    --white: #ffffff;
+    --danger: #dc2626;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+  header { background: var(--white); border-bottom: 1px solid var(--border); padding: 1rem 1.5rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: .75rem; }
+  header h1 { font-size: 1.25rem; font-weight: 600; letter-spacing: -.02em; }
+  header h1 span { color: var(--accent); }
+  .status-pill { font-size: .75rem; padding: .25rem .75rem; border-radius: 999px; background: #fef9c3; color: #713f12; border: 1px solid #fde68a; }
+  .status-pill.connected { background: #dcfce7; color: #15803d; border-color: #bbf7d0; }
+
+  main { padding: 1.5rem; max-width: 1200px; margin: 0 auto; }
+
+  .config-panel { background: var(--white); border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem; margin-bottom: 1.5rem; }
+  .config-panel summary { font-weight: 600; font-size: .9rem; cursor: pointer; user-select: none; color: var(--muted); }
+  .config-panel summary:hover { color: var(--text); }
+  .config-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem; }
+  @media(max-width:600px){ .config-grid { grid-template-columns: 1fr; } }
+  .config-group label { display: block; font-size: .8rem; font-weight: 500; color: var(--muted); margin-bottom: .35rem; }
+  .config-group textarea { width: 100%; border: 1px solid var(--border); border-radius: 8px; padding: .5rem .75rem; font-size: .85rem; resize: vertical; min-height: 80px; font-family: inherit; }
+  .config-group input[type=text] { width: 100%; border: 1px solid var(--border); border-radius: 8px; padding: .5rem .75rem; font-size: .85rem; font-family: inherit; }
+  .btn { display: inline-flex; align-items: center; gap: .4rem; padding: .5rem 1rem; border-radius: 8px; border: none; cursor: pointer; font-size: .875rem; font-weight: 500; transition: all .15s; }
+  .btn-primary { background: var(--accent); color: white; }
+  .btn-primary:hover { background: #1d4ed8; }
+  .btn-sm { padding: .3rem .7rem; font-size: .8rem; }
+  .config-actions { margin-top: 1rem; display: flex; gap: .5rem; align-items: center; }
+
+  .grid-wrapper { overflow-x: auto; border-radius: 12px; border: 1px solid var(--border); background: var(--white); }
+  table { border-collapse: collapse; width: 100%; min-width: 400px; }
+  th { background: #f3f4f6; font-size: .75rem; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); padding: .6rem .9rem; border: 1px solid var(--border); white-space: nowrap; }
+  th.location-header { background: var(--accent); color: white; border-color: #1d4ed8; }
+  td.time-cell { font-size: .8rem; font-weight: 600; color: var(--muted); padding: .6rem .9rem; background: #f3f4f6; border: 1px solid var(--border); white-space: nowrap; min-width: 90px; }
+  td.slot { border: 1px solid var(--border); padding: .45rem .65rem; cursor: pointer; transition: background .1s; min-width: 110px; vertical-align: middle; }
+  td.slot:hover { background: var(--accent-light); }
+  td.slot.taken { background: var(--taken-light); cursor: default; }
+  td.slot.mine { background: var(--mine-light); cursor: pointer; }
+  .slot-content { display: flex; align-items: center; justify-content: space-between; gap: .4rem; }
+  .slot-badge { font-size: .72rem; font-weight: 600; padding: .2rem .5rem; border-radius: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 120px; }
+  .slot-badge.free { background: transparent; color: var(--muted); font-weight: 400; }
+  .slot-badge.taken-badge { background: #dcfce7; color: var(--taken); }
+  .slot-badge.mine-badge { background: #ede9fe; color: var(--mine); }
+  .unbook-btn { font-size: .65rem; border: 1px solid var(--mine); color: var(--mine); background: transparent; border-radius: 4px; padding: .1rem .35rem; cursor: pointer; flex-shrink: 0; }
+  .unbook-btn:hover { background: var(--mine); color: white; }
+
+  .legend { display: flex; gap: 1rem; margin-bottom: 1rem; flex-wrap: wrap; }
+  .legend-item { display: flex; align-items: center; gap: .4rem; font-size: .8rem; color: var(--muted); }
+  .legend-dot { width: 12px; height: 12px; border-radius: 3px; flex-shrink: 0; }
+
+  /* Modal */
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.4); z-index: 100; align-items: center; justify-content: center; }
+  .modal-overlay.open { display: flex; }
+  .modal { background: var(--white); border-radius: 16px; padding: 1.75rem; max-width: 380px; width: 90%; box-shadow: 0 20px 60px rgba(0,0,0,.15); }
+  .modal h2 { font-size: 1.1rem; font-weight: 600; margin-bottom: .25rem; }
+  .modal .slot-info { font-size: .85rem; color: var(--muted); margin-bottom: 1.25rem; padding: .6rem .9rem; background: var(--bg); border-radius: 8px; }
+  .modal label { display: block; font-size: .8rem; font-weight: 500; color: var(--muted); margin-bottom: .35rem; }
+  .modal input { width: 100%; border: 1.5px solid var(--border); border-radius: 8px; padding: .55rem .85rem; font-size: .95rem; font-family: inherit; outline: none; }
+  .modal input:focus { border-color: var(--accent); }
+  .modal-actions { display: flex; gap: .65rem; margin-top: 1.25rem; }
+  .btn-cancel { background: transparent; border: 1px solid var(--border); color: var(--muted); }
+  .btn-cancel:hover { background: var(--bg); }
+  .modal-error { font-size: .8rem; color: var(--danger); margin-top: .5rem; min-height: 1.1rem; }
+
+  .firebase-setup { background: #fffbeb; border: 1px solid #fde68a; border-radius: 12px; padding: 1.25rem; margin-bottom: 1.5rem; }
+  .firebase-setup h3 { font-size: .95rem; font-weight: 600; color: #92400e; margin-bottom: .5rem; }
+  .firebase-setup p { font-size: .83rem; color: #78350f; margin-bottom: .75rem; line-height: 1.6; }
+  .firebase-setup input { width: 100%; border: 1.5px solid #fde68a; border-radius: 8px; padding: .5rem .85rem; font-size: .85rem; background: white; font-family: monospace; margin-bottom: .5rem; outline: none; }
+  .firebase-setup input:focus { border-color: var(--accent); }
+  .firebase-setup .hint { font-size: .78rem; color: #a16207; font-style: italic; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Signup <span>Grid</span></h1>
+  <span class="status-pill" id="status-pill">● Connecting…</span>
+</header>
+
+<main>
+
+  <!-- Firebase setup banner (shown until configured) -->
+  <div class="firebase-setup" id="firebase-setup">
+    <h3>⚙️ One-time Firebase setup</h3>
+    <p>This app needs a free Firebase Realtime Database to sync signups in real time. Create one at <a href="https://console.firebase.google.com" target="_blank">console.firebase.google.com</a> → New project → Realtime Database → Start in <strong>test mode</strong>. Then paste your database URL below:</p>
+    <input type="text" id="fb-url-input" placeholder="https://YOUR-PROJECT-default-rtdb.europe-west1.firebasedatabase.app" />
+    <div class="hint">Looks like: https://my-project-default-rtdb.firebaseio.com</div>
+    <div style="margin-top:.75rem">
+      <button class="btn btn-primary btn-sm" onclick="saveFirebaseUrl()">Save & Connect</button>
+    </div>
+  </div>
+
+  <!-- Config panel -->
+  <details class="config-panel" id="config-panel">
+    <summary>⚙️ Edit grid configuration (time slots &amp; locations)</summary>
+    <div class="config-grid">
+      <div class="config-group">
+        <label>Time slots (one per line)</label>
+        <textarea id="cfg-times" rows="6">09:00 – 09:30
+09:30 – 10:00
+10:00 – 10:30
+10:30 – 11:00
+11:00 – 11:30
+11:30 – 12:00</textarea>
+      </div>
+      <div class="config-group">
+        <label>Locations (one per line)</label>
+        <textarea id="cfg-locations" rows="6">Room A
+Room B
+Room C
+Outdoor</textarea>
+      </div>
+    </div>
+    <div class="config-group" style="margin-top:1rem">
+      <label>Event title</label>
+      <input type="text" id="cfg-title" value="Community Event 2025">
+    </div>
+    <div class="config-actions">
+      <button class="btn btn-primary btn-sm" onclick="applyConfig()">Apply &amp; Save</button>
+      <span style="font-size:.8rem;color:var(--muted)" id="config-save-msg"></span>
+    </div>
+  </details>
+
+  <!-- Legend -->
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:#f3f4f6;border:1px solid #d1d5db"></div>Free</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#dcfce7"></div>Taken</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#ede9fe"></div>Your booking</div>
+  </div>
+
+  <!-- Grid -->
+  <div class="grid-wrapper">
+    <table id="grid-table">
+      <thead id="grid-head"></thead>
+      <tbody id="grid-body"></tbody>
+    </table>
+  </div>
+
+</main>
+
+<!-- Signup modal -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <h2>Sign up for this slot</h2>
+    <div class="slot-info" id="modal-slot-info">—</div>
+    <label for="modal-email">Your email address</label>
+    <input type="email" id="modal-email" placeholder="you@example.com" autocomplete="email" />
+    <div class="modal-error" id="modal-error"></div>
+    <div class="modal-actions">
+      <button class="btn btn-primary" onclick="confirmSignup()">Confirm signup</button>
+      <button class="btn btn-cancel" onclick="closeModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Firebase SDKs -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+<script>
+// ─── State ────────────────────────────────────────────────────────────────────
+let db = null;
+let signupsRef = null;
+let configRef = null;
+let currentSlot = null; // {timeIdx, locIdx, timeLabel, locLabel}
+let myEmail = localStorage.getItem('signup_grid_email') || '';
+let liveSignups = {}; // key: "t{timeIdx}_l{locIdx}" → {email, timestamp}
+let gridConfig = {
+  title: 'Community Event 2025',
+  times: ['09:00 – 09:30','09:30 – 10:00','10:00 – 10:30','10:30 – 11:00','11:00 – 11:30','11:30 – 12:00'],
+  locations: ['Room A','Room B','Room C','Outdoor']
+};
+
+// ─── Firebase init ────────────────────────────────────────────────────────────
+function initFirebase(url) {
+  try {
+    if (firebase.apps.length) firebase.apps[0].delete();
+    const app = firebase.initializeApp({ databaseURL: url });
+    db = firebase.database(app);
+    signupsRef = db.ref('signups');
+    configRef = db.ref('config');
+    listenFirebase();
+    document.getElementById('status-pill').textContent = '● Connected';
+    document.getElementById('status-pill').classList.add('connected');
+    document.getElementById('firebase-setup').style.display = 'none';
+  } catch(e) {
+    setStatus('Error: ' + e.message, false);
+  }
+}
+
+function listenFirebase() {
+  signupsRef.on('value', snap => {
+    liveSignups = snap.val() || {};
+    renderGrid();
+  });
+  configRef.on('value', snap => {
+    const remote = snap.val();
+    if (remote && remote.times) {
+      gridConfig = remote;
+      document.getElementById('cfg-times').value = remote.times.join('\n');
+      document.getElementById('cfg-locations').value = remote.locations.join('\n');
+      document.getElementById('cfg-title').value = remote.title || '';
+      renderGrid();
+    }
+  });
+}
+
+function saveFirebaseUrl() {
+  const url = document.getElementById('fb-url-input').value.trim();
+  if (!url.startsWith('https://')) { alert('Please enter a valid Firebase URL'); return; }
+  localStorage.setItem('signup_grid_fb_url', url);
+  initFirebase(url);
+}
+
+// ─── Config ───────────────────────────────────────────────────────────────────
+function applyConfig() {
+  const times = document.getElementById('cfg-times').value.trim().split('\n').map(s=>s.trim()).filter(Boolean);
+  const locations = document.getElementById('cfg-locations').value.trim().split('\n').map(s=>s.trim()).filter(Boolean);
+  const title = document.getElementById('cfg-title').value.trim() || 'Signup Grid';
+  if (!times.length || !locations.length) { alert('Need at least one time slot and one location'); return; }
+  gridConfig = { title, times, locations };
+  if (configRef) configRef.set(gridConfig);
+  renderGrid();
+  const msg = document.getElementById('config-save-msg');
+  msg.textContent = 'Saved!';
+  setTimeout(()=>{ msg.textContent = ''; }, 2000);
+}
+
+// ─── Render grid ──────────────────────────────────────────────────────────────
+function slotKey(ti, li) { return `t${ti}_l${li}`; }
+
+function renderGrid() {
+  document.title = gridConfig.title + ' — Signup Grid';
+  const head = document.getElementById('grid-head');
+  const body = document.getElementById('grid-body');
+
+  // Header row
+  let headHTML = '<tr><th>Time</th>';
+  gridConfig.locations.forEach(loc => {
+    headHTML += `<th class="location-header">${escHtml(loc)}</th>`;
+  });
+  headHTML += '</tr>';
+  head.innerHTML = headHTML;
+
+  // Body rows
+  let bodyHTML = '';
+  gridConfig.times.forEach((time, ti) => {
+    bodyHTML += `<tr><td class="time-cell">${escHtml(time)}</td>`;
+    gridConfig.locations.forEach((loc, li) => {
+      const key = slotKey(ti, li);
+      const entry = liveSignups[key];
+      if (entry) {
+        const isMe = myEmail && entry.email.toLowerCase() === myEmail.toLowerCase();
+        if (isMe) {
+          bodyHTML += `<td class="slot mine" onclick="promptUnbook('${key}','${escAttr(time)}','${escAttr(loc)}')">
+            <div class="slot-content">
+              <span class="slot-badge mine-badge" title="${escAttr(entry.email)}">${escHtml(truncEmail(entry.email))}</span>
+              <button class="unbook-btn" title="Cancel your booking">✕</button>
+            </div></td>`;
+        } else {
+          bodyHTML += `<td class="slot taken">
+            <div class="slot-content">
+              <span class="slot-badge taken-badge" title="${escAttr(entry.email)}">${escHtml(truncEmail(entry.email))}</span>
+            </div></td>`;
+        }
+      } else {
+        bodyHTML += `<td class="slot" onclick="openModal(${ti},${li},'${escAttr(time)}','${escAttr(loc)}')">
+          <span class="slot-badge free">+ sign up</span></td>`;
+      }
+    });
+    bodyHTML += '</tr>';
+  });
+  body.innerHTML = bodyHTML;
+}
+
+function truncEmail(email) {
+  if (email.length <= 20) return email;
+  const at = email.indexOf('@');
+  if (at > 0) return email.slice(0, Math.min(at, 8)) + '…' + email.slice(email.lastIndexOf('.'));
+  return email.slice(0,14) + '…';
+}
+
+// ─── Signup modal ─────────────────────────────────────────────────────────────
+function openModal(ti, li, time, loc) {
+  currentSlot = { ti, li, time, loc };
+  document.getElementById('modal-slot-info').textContent = `${time}  ·  ${loc}`;
+  document.getElementById('modal-email').value = myEmail;
+  document.getElementById('modal-error').textContent = '';
+  document.getElementById('modal').classList.add('open');
+  setTimeout(()=>{ document.getElementById('modal-email').focus(); }, 50);
+}
+
+function closeModal() {
+  document.getElementById('modal').classList.remove('open');
+  currentSlot = null;
+}
+
+document.getElementById('modal').addEventListener('click', e => {
+  if (e.target === document.getElementById('modal')) closeModal();
+});
+
+document.getElementById('modal-email').addEventListener('keydown', e => {
+  if (e.key === 'Enter') confirmSignup();
+  if (e.key === 'Escape') closeModal();
+});
+
+function confirmSignup() {
+  const email = document.getElementById('modal-email').value.trim().toLowerCase();
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    document.getElementById('modal-error').textContent = 'Please enter a valid email address.';
+    return;
+  }
+  if (!signupsRef) { document.getElementById('modal-error').textContent = 'Not connected to database yet.'; return; }
+
+  // Check if user already has a booking (optional — remove if you want to allow multiple)
+  const alreadyBooked = Object.entries(liveSignups).find(([k, v]) => v.email.toLowerCase() === email);
+  if (alreadyBooked) {
+    const [key] = alreadyBooked;
+    const [tiStr, liStr] = key.replace('t','').split('_l');
+    const existingTime = gridConfig.times[parseInt(tiStr)] || '?';
+    const existingLoc = gridConfig.locations[parseInt(liStr)] || '?';
+    document.getElementById('modal-error').textContent = `You already signed up for ${existingTime} · ${existingLoc}.`;
+    return;
+  }
+
+  myEmail = email;
+  localStorage.setItem('signup_grid_email', email);
+  const key = slotKey(currentSlot.ti, currentSlot.li);
+  signupsRef.child(key).set({ email, timestamp: Date.now() });
+  closeModal();
+}
+
+function promptUnbook(key, time, loc) {
+  if (confirm(`Cancel your booking for ${time} · ${loc}?`)) {
+    signupsRef.child(key).remove();
+  }
+}
+
+// ─── Utils ────────────────────────────────────────────────────────────────────
+function escHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function escAttr(s) { return String(s).replace(/'/g,'&#39;').replace(/"/g,'&quot;'); }
+
+function setStatus(msg, ok) {
+  const p = document.getElementById('status-pill');
+  p.textContent = '● ' + msg;
+  p.classList.toggle('connected', ok);
+}
+
+// ─── Boot ─────────────────────────────────────────────────────────────────────
+(function boot() {
+  const savedUrl = localStorage.getItem('signup_grid_fb_url');
+  if (savedUrl) {
+    document.getElementById('fb-url-input').value = savedUrl;
+    initFirebase(savedUrl);
+  } else {
+    setStatus('Setup required', false);
+  }
+  renderGrid(); // offline preview
+})();
+</script>
+</body>
+</html>
