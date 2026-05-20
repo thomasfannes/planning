@@ -135,7 +135,7 @@ Outdoor</textarea>
     </div>
     <div class="config-group" style="margin-top:1rem">
       <label>Event title</label>
-      <input type="text" id="cfg-title" value="Community Event 2026">
+      <input type="text" id="cfg-title" value="Community Event 2025">
     </div>
     <div class="config-actions">
       <button class="btn btn-primary btn-sm" onclick="applyConfig()">Apply &amp; Save</button>
@@ -188,7 +188,7 @@ let currentSlot = null; // {timeIdx, locIdx, timeLabel, locLabel}
 let myEmail = localStorage.getItem('signup_grid_email') || '';
 let liveSignups = {}; // key: "t{timeIdx}_l{locIdx}" → {email, timestamp}
 let gridConfig = {
-  title: 'Community Event 2026',
+  title: 'Community Event 2025',
   times: ['09:00 – 09:30','09:30 – 10:00','10:00 – 10:30','10:30 – 11:00','11:00 – 11:30','11:30 – 12:00'],
   locations: ['Room A','Room B','Room C','Outdoor']
 };
@@ -334,14 +334,16 @@ function confirmSignup() {
   }
   if (!signupsRef) { document.getElementById('modal-error').textContent = 'Not connected to database yet.'; return; }
 
-  // Check if user already has a booking (optional — remove if you want to allow multiple)
-  const alreadyBooked = Object.entries(liveSignups).find(([k, v]) => v.email.toLowerCase() === email);
-  if (alreadyBooked) {
-    const [key] = alreadyBooked;
-    const [tiStr, liStr] = key.replace('t','').split('_l');
-    const existingTime = gridConfig.times[parseInt(tiStr)] || '?';
+  // Check if user already has a booking in this same time slot (row)
+  const rowKey = `t${currentSlot.ti}_`;
+  const alreadyInRow = Object.entries(liveSignups).find(([k, v]) =>
+    k.startsWith(rowKey) && v.email.toLowerCase() === email
+  );
+  if (alreadyInRow) {
+    const [key] = alreadyInRow;
+    const liStr = key.split('_l')[1];
     const existingLoc = gridConfig.locations[parseInt(liStr)] || '?';
-    document.getElementById('modal-error').textContent = `You already signed up for ${existingTime} · ${existingLoc}.`;
+    document.getElementById('modal-error').textContent = `You already signed up for ${currentSlot.time} · ${existingLoc}.`;
     return;
   }
 
