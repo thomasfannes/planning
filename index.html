@@ -372,6 +372,10 @@ function setStatus(msg, ok) {
 // Set your admin password here ↓ (change "changeme" to something secret)
 const ADMIN_PASSWORD = 'changeme';
 
+// ▼▼▼ PASTE YOUR FIREBASE DATABASE URL HERE ▼▼▼
+const FIREBASE_URL = 'https://planningorangerie-default-rtdb.europe-west1.firebasedatabase.app/';
+// ▲▲▲ e.g. 'https://my-project-default-rtdb.firebaseio.com' ▲▲▲
+
 function isAdmin() {
   const params = new URLSearchParams(window.location.search);
   return params.get('admin') === ADMIN_PASSWORD;
@@ -393,7 +397,7 @@ function isAdmin() {
     firebaseSetup.style.display = 'none';
   }
 
-  const savedUrl = localStorage.getItem('signup_grid_fb_url');
+  const savedUrl = FIREBASE_URL || localStorage.getItem('signup_grid_fb_url');
   if (savedUrl) {
     document.getElementById('fb-url-input').value = savedUrl;
     initFirebase(savedUrl);
